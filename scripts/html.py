@@ -27,14 +27,15 @@
 
 def setup():
   from base64 import urlsafe_b64encode, urlsafe_b64decode
-  from cookies import CookieError, SimpleCookie
+  from http.cookies import CookieError, SimpleCookie
   from cgi import FieldStorage
   from datetime import datetime
   from decimal import Decimal
   from json import JSONEncoder
   from os import environ, path
   from pickle import dumps, loads, UnpicklingError
-  from pypp import preprocess
+  from .pypp import preprocess
+  from sys import exit
 
   class DecimalEncoder(JSONEncoder):
     def default(self, obj):
@@ -88,7 +89,7 @@ def setup():
   def setField(name, value):
     nonlocal fields
     fields[name] = value
-  def saveFields()
+  def saveFields():
     nonlocal fields, urlsafe_b64encode, dumps
     return str(urlsafe_b64encode(dumps(fields,-1)))[2:-1]
   def loadFields(dictionary):
@@ -99,50 +100,52 @@ def setup():
     except UnpicklingError:
       pass
     
-    global redirect, serve, AJAX, error
-    def redirect(loc):
-      nonlocal new_cookies
-      print("Location: %s" % loc)
-      print(new_cookies.output(sep = '\n'))
-      print()
-      sys.exit(0)
-    def AJAX(doc):
-      global toJSON
-      print("Content-type: text/plain")
-      print()
-      print(toJSON(doc))
-      sys.exit(0)
-    def serve(name):
-      global values
-      nonlocal preprocess, new_cookies, path
-      values['__COOKIES__'] = new_cookies.output(sep = '\n')
-      folder = name.rsplit(".", 1)[1]
-      try:
-        preprocess(path.join(folder, name), values, None)
-      except IOError as e:
-        if e.errno == 2:
-          pageError(name, 404)
-        else:
-          raise
-      preprocess(path.join(folder, name), values)
-      sys.exit(0)
-    
-    errmessages = {
-      404 : 'Not Found'
-    }
-    def error(name, errno):
-      global values
-      nonlocal errmessages
-      values['__ERRFILE__'] = name
-      values['__ERRNO__'] = errno
-      values['__ERRMESSAGE__'] = errmessages[errno]
-      preprocess(path.join('html', '%d.html' % str(errno)), values)
-      sys.exit(0)
+  global redirect, serve, AJAX, error
+  def redirect(loc):
+    nonlocal new_cookies
+    print("Location: %s" % loc)
+    print(new_cookies.output(sep = '\n'))
+    print()
+    exit(0)
+  def AJAX(doc):
+    global toJSON
+    print("Content-type: text/plain")
+    print()
+    print(toJSON(doc))
+    exit(0)
+  def serve(name):
+    global values
+    nonlocal preprocess, new_cookies, path
+    values['__COOKIES__'] = new_cookies.output(sep = '\n')
+    folder = name.rsplit(".", 1)[1]
     try:
-      setField('query_string', '?%s' % environ['QUERY_STRING'])
-    except KeyError:
-      setField('query_string', '')
-    values = {
-      'query_string' : getField('query_string'),
-      'redirect' : ''
-    }
+      preprocess(path.join(folder, name), values, None)
+    except IOError as e:
+      if e.errno == 2:
+        pageError(name, 404)
+      else:
+        raise
+    preprocess(path.join(folder, name), values)
+    exit(0)
+  
+  errmessages = {
+    404 : 'Not Found'
+  }
+  def error(name, errno):
+    global values
+    nonlocal errmessages
+    values['__ERRFILE__'] = name
+    values['__ERRNO__'] = errno
+    values['__ERRMESSAGE__'] = errmessages[errno]
+    preprocess(path.join('html', '%d.html' % str(errno)), values)
+    exit(0)
+  try:
+    setField('query_string', '?%s' % environ['QUERY_STRING'])
+  except KeyError:
+    setField('query_string', '')
+  
+  global values
+  values = {
+    'query_string' : getField('query_string'),
+    'redirect' : ''
+  }

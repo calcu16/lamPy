@@ -27,7 +27,7 @@
 
 def sqlite(**kwargs):
   from sqlite3 import connect
-  from pypp import preprocess
+  from .pypp import preprocess
   
   def dict_factory(cursor, row):
     d = {}
