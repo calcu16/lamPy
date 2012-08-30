@@ -25,3 +25,50 @@
 # of the authors and should not be interpreted as representing official policies, 
 # either expressed or implied, of the FreeBSD Project.
 
+def sqlite(**kwargs):
+  from sqlite3 import connect
+  from pypp import preprocess
+  
+  def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+      d[col[0]] = row[idx]
+    return d
+  
+  def strbuilder():
+    result = ""
+    def builder(s = None):
+      nonlocal result
+      if s is not None:
+        result = "%s%s\n" % (result, s)
+      return s
+  
+  class Connection(object):
+    def __init__(**kwargs):
+      nonlocal dict_factory
+      self.conn = connect(**kwargs)
+      self.cur = conn.cursor()
+      self.scalar_factory = dict_factory
+    def scalar(query, values):
+      row = self.row(query, values)
+      return row[self.cur.description[0]]
+    def row(query, values):
+      self.execute(query, values)
+      return self.cur.fetchone()
+    def query(query, values):
+      self.execute(query, values)
+      return self.cur.fetchall()
+    def execute(query, values):
+      query, values = self.build(query, values)
+      return self.cur.execute(query, values)
+    def script(query, values):
+      query, values = self.build(query, values)
+      return self.cur.executescript(query, values)
+    def build(query, values)
+      nonlocal strbuilder, preprocess
+      values = dict(values)
+      values['__SQL__'] = 'sqlite3'
+      result = strbuilder()
+      values = pypreprocess('sql/%s.sql' % query, values, result)
+      return result(), values
+  return Connection(db)
