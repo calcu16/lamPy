@@ -122,7 +122,7 @@ def setup():
       preprocess(path.join(folder, name), values, None)
     except IOError as e:
       if e.errno == 2:
-        pageError(name, 404)
+        error(name, 404)
       else:
         raise
     preprocess(path.join(folder, name), values)
