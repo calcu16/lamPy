@@ -64,11 +64,11 @@ def sqlite(**kwargs):
     def script(query, values):
       query, values = self.build(query, values)
       return self.cur.executescript(query, values)
-    def build(query, values)
+    def build(query, values):
       nonlocal strbuilder, preprocess
       values = dict(values)
       values['__SQL__'] = 'sqlite3'
       result = strbuilder()
       values = pypreprocess('sql/%s.sql' % query, values, result)
       return result(), values
-  return Connection(db)
+  return Connection(**kwargs)
