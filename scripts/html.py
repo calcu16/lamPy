@@ -58,7 +58,7 @@ def setup():
 
   try:
     old_cookies = SimpleCookie(environ['HTTP_COOKIE'])
-  except CookieError, KeyError:
+  except (CookieError, KeyError):
     old_cookies = {}
   
   global getCookie, setCookie, deleteCookie
