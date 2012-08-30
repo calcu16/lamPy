@@ -25,3 +25,124 @@
 # of the authors and should not be interpreted as representing official policies, 
 # either expressed or implied, of the FreeBSD Project.
 
+def setup():
+  from base64 import urlsafe_b64encode, urlsafe_b64decode
+  from cookies import CookieError, SimpleCookie
+  from cgi import FieldStorage
+  from datetime import datetime
+  from decimal import Decimal
+  from json import JSONEncoder
+  from os import environ, path
+  from pickle import dumps, loads, UnpicklingError
+  from pypp import preprocess
+
+  class DecimalEncoder(JSONEncoder):
+    def default(self, obj):
+      nonlocal Decimal, JSONEncoder
+      if isinstance(obj, Decimal):
+        return str(obj)
+      return JSONEncoder.default(self, obj)
+  
+  global toJSON, toHiddenJSON
+  def toJSON(obj):
+    nonlocal DecimalEncoder
+    return DecimalEncoder().encode(obj)
+  def toHiddenJSON(obj):
+    nonlocal DecimalEncoder
+    return toJSON(obj).replace("&", "&#38;").replace("'", "&39;")
+
+  new_cookies = SimpleCookie()
+  form = FieldStorage()
+  fields = {}
+  moon = datetime(1969, 7, 21, 2, 56)
+
+  try:
+    old_cookies = SimpleCookie(environ['HTTP_COOKIE'])
+  except CookieError, KeyError:
+    old_cookies = {}
+  
+  global getCookie, setCookie, deleteCookie
+  def getCookie(name):
+    nonlocal old_cookies
+    try:
+        return old_cookies[name].value
+    except KeyError:
+        return None
+  def setCookie(name, value):
+    nonlocal new_cookies
+    new_cookies[name] = value
+    new_cookies[name]['expires'] = '0'
+  def deleteCookie(name):
+    nonlocal new_cookies, moon
+    new_cookies[name] = 'expiring'
+    new_cookies[name]['expires'] = moon.strftime("%a, %d-%b-%Y %H:%M:%S GMT")
+  
+  global getField, containsField, setField, saveFields, loadFields
+  def getField(name, one = True):
+    nonlocal form, fields
+    fields[name] = fields.get(name, form.getfirst(name) if one else form.getlist(name))
+    return fields[name]
+  def containsField(name):
+    nonlocal form, fields
+    return name in fields or name in form
+  def setField(name, value):
+    nonlocal fields
+    fields[name] = value
+  def saveFields()
+    nonlocal fields, urlsafe_b64encode, dumps
+    return str(urlsafe_b64encode(dumps(fields,-1)))[2:-1]
+  def loadFields(dictionary):
+    nonlocal fields, loads, urlsafe_b64decode, UnpicklingError
+    try:
+      if dictionary:
+        fields = loads(urlsafe_b64decode(bytes(dictionary, 'utf-8')))
+    except UnpicklingError:
+      pass
+    
+    global redirect, serve, AJAX, error
+    def redirect(loc):
+      nonlocal new_cookies
+      print("Location: %s" % loc)
+      print(new_cookies.output(sep = '\n'))
+      print()
+      sys.exit(0)
+    def AJAX(doc):
+      global toJSON
+      print("Content-type: text/plain")
+      print()
+      print(toJSON(doc))
+      sys.exit(0)
+    def serve(name):
+      global values
+      nonlocal preprocess, new_cookies, path
+      values['__COOKIES__'] = new_cookies.output(sep = '\n')
+      folder = name.rsplit(".", 1)[1]
+      try:
+        preprocess(path.join(folder, name), values, None)
+      except IOError as e:
+        if e.errno == 2:
+          pageError(name, 404)
+        else:
+          raise
+      preprocess(path.join(folder, name), values)
+      sys.exit(0)
+    
+    errmessages = {
+      404 : 'Not Found'
+    }
+    def error(name, errno):
+      global values
+      nonlocal errmessages
+      values['__ERRFILE__'] = name
+      values['__ERRNO__'] = errno
+      values['__ERRMESSAGE__'] = errmessages[errno]
+      preprocess(path.join('html', '%d.html' % str(errno)), values)
+      sys.exit(0)
+    try:
+      setField('query_string', '?%s' % environ['QUERY_STRING'])
+    except KeyError:
+      setField('query_string', '')
+    values = {
+      'query_string' : getField('query_string'),
+      'redirect' : ''
+    }
