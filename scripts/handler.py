@@ -27,5 +27,5 @@
 from cgitb import enable
 enable()
 
-from .scripts.webapp import run
+from scripts.html import run
 run()
