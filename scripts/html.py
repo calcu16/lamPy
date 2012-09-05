@@ -119,13 +119,13 @@ def setup():
     values['__COOKIES__'] = new_cookies.output(sep = '\n')
     folder = name.rsplit(".", 1)[1]
     try:
-      preprocess(path.join(folder, name), values, None)
+      preprocess(path.join(folder, name), values, None, "html")
     except IOError as e:
       if e.errno == 2:
         error(name, 404)
       else:
         raise
-    preprocess(path.join(folder, name), values)
+    preprocess(path.join(folder, name), values, root="html")
     exit(0)
   
   errmessages = {
@@ -149,3 +149,8 @@ def setup():
     'query_string' : getField('query_string'),
     'redirect' : ''
   }
+  values['site_path'] = path.dirname(environ['SCRIPT_NAME'])
+  values['file_path'] = environ['REDIRECT_URL'][len(values['site_path']):]
+  if not path.splitext(values['file_path'])[1]:
+    values['file_path'] = path.join(values['file_path'], '')
+  values['file_dir'], values['file_name'] = path.split(values['file_path'])
