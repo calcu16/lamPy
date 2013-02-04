@@ -155,6 +155,6 @@ def setup():
     values['file_path'] = path.join(values['file_path'], '')
   values['file_dir'], values['file_name'] = path.split(values['file_path'])
   if not values['file_name']:
-  	values['file_name'] = 'index.html'
-	values['file_path'] = path.join(values['file_dir'],values['file_name'])
+    values['file_name'] = 'index.html'
+    values['file_path'] = path.join(values['file_dir'],values['file_name'])
 
