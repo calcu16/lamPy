@@ -1,4 +1,4 @@
-lamPy
+PrOOF
 =====
 
-Linux Apache MySQL Python
+A proof editor
