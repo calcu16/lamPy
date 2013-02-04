@@ -28,10 +28,16 @@ from cgitb import enable
 enable()
 
 from os.path import curdir, join, isdir
-from os import listdir
+from os import listdir, execv
 
 subpath = join(curdir,"sub")
-submodules = [name for name in listdir(subpath) if isdir(join(subpath,name))]
+try:
+	submodules = [name for name in listdir(subpath) if isdir(join(subpath,name))]
+except OSError:
+	# no submodules
+	pass
+
+
 
 from scripts.webapp import run
 run()
