@@ -30,4 +30,6 @@ setup()
 
 def run():
   # your code here
+  from .html import serve, values
+  serve(values['file_path'][1:])
   pass

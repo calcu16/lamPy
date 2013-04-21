@@ -37,8 +37,6 @@ except OSError:
 	# no submodules
 	pass
 
-
-
 from scripts.webapp import run
 run()
 
