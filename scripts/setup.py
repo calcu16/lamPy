@@ -1,3 +1,4 @@
+#!/home/acarter/bin/python3
 # Copyright (c) 2012 Andrew Carter
 # All rights reserved.
 #
@@ -29,22 +30,11 @@ enable()
 from os import environ
 from os import path
 
+web_dir = path.dirname(environ["REQUEST_URI"])
+
+from scripts.pypp import preprocess
+htaccess = open(".htaccess","w")
+preprocess(".htaccess.template",{"dir":web_dir},output=lambda line : print(line,file=htaccess))
+
 print("Location: index.html")
 print()
-
-web_dir = path.dirname(environ['REQUEST_URI'])
-htaccess = open(".htaccess","a")
-
-print('''
-<Files setup.py>
-	Deny from all
-</Files>
-
-RewriteEngine On
-RewriteRule ^.*\.html %(dir)s/handler.py
-RewriteRule ^.*/[^.]*$ %(dir)s/handler.py
-RewriteRule ^[^.]*$ %(dir)s/handler.py
-''' % {'dir':web_dir}, file=htaccess)
-
-
-

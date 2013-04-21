@@ -5,7 +5,7 @@ clean:
 	rm -rf .htaccess handler.py setup.py  __pycache__ scripts/__pycache__
 
 .htaccess: .htaccess.template
-	cp .htaccess.template .htaccess && chmod 755 .htaccess
+	cp .htaccess.start .htaccess && chmod 755 .htaccess
 
 handler.py: scripts/handler.py
 	echo '#!'`which python3` | cat - scripts/handler.py > handler.py && chmod 755 handler.py
