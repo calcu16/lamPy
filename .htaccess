@@ -1,6 +1,4 @@
+Options +ExecCGI
 AddHandler cgi-script .py
 DirectoryIndex index.html
 
-RewriteEngine On
-RewriteRule ^[^.]*\.html handler.py
-RewriteRule ^[^.]*$ handler.py
