@@ -25,5 +25,5 @@ Use the following directives to aid in building the website.
 
 * #inside "filename" : Puts the remaining text inside of "filename"
 * #include "filename" : Includes "filename" at that location
-* #incude : Includes the file that is inside this file (see inside directive)
+* #include : Includes the file that is inside this file (see inside directive)
 
