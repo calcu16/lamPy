@@ -3,3 +3,4 @@ build
 /setup.py
 /handler.py
 /.htaccess
+/node
