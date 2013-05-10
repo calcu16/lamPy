@@ -119,13 +119,13 @@ def setup():
     values['__COOKIES__'] = new_cookies.output(sep = '\n')
     folder = name.rsplit(".", 1)[1]
     try:
-      preprocess(path.join(folder, name), values, None, "html")
+      preprocess(path.join(folder, name), values, None, root="./")
     except IOError as e:
       if e.errno == 2:
         error(name, 404)
       else:
         raise
-    preprocess(path.join(folder, name), values, root="html")
+    preprocess(path.join(folder, name), values, root="./")
     exit(0)
   
   errmessages = {
