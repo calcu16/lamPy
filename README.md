@@ -11,7 +11,7 @@ Installation:
 
 3. run "make"
 
-4. In your browser got to 'http://<url of your site>/setup.py'
+4. In your browser got to 'http://\<url of your site\>/setup.py'
 	This should redirect you to 'index.html' and display 'Welcome to lamPy.'
 
 5. ???
