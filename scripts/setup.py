@@ -1,3 +1,4 @@
+#!/home/acarter/bin/python3
 # Copyright (c) 2012 Andrew Carter
 # All rights reserved.
 #
@@ -26,17 +27,14 @@
 # either expressed or implied, of the FreeBSD Project.
 from cgitb import enable
 enable()
+from os import environ
+from os import path
 
-from os.path import curdir, join, isdir
-from os import listdir, execv
+web_dir = path.dirname(environ["REQUEST_URI"])
 
-subpath = join(curdir,"sub")
-try:
-	submodules = [name for name in listdir(subpath) if isdir(join(subpath,name))]
-except OSError:
-	# no submodules
-	pass
+from scripts.pypp import preprocess
+htaccess = open(".htaccess","w")
+preprocess(".htaccess.template",{"dir":web_dir},output=lambda line : print(line,file=htaccess))
 
-from scripts.webapp import run
-run()
-
+print("Location: index.html")
+print()

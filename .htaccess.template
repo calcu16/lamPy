@@ -1,0 +1,13 @@
+Options +ExecCGI
+AddHandler cgi-script .py
+DirectoryIndex index.html
+
+<Files setup.py>
+        Deny from all
+</Files>
+
+RewriteEngine On
+RewriteRule ^.*\.html %(dir)s/handler.py
+RewriteRule ^.*/[^.]*$ %(dir)s/handler.py
+RewriteRule ^[^.]*$ %(dir)s/handler.py
+
