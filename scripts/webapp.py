@@ -31,5 +31,7 @@ setup()
 def run():
   # your code here
   from .html import serve, values
-  serve(values['file_path'][1:])
+  if values['file_path'][0] == '/':
+    values['file_path'] = values['file_path'][1:]
+  serve(values['file_path'])
   pass
