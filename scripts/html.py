@@ -114,9 +114,10 @@ def setup():
     print(toJSON(doc))
     exit(0)
   def serve(name):
-    global values
+    global values, getField
     nonlocal preprocess, new_cookies, path
     values['__COOKIES__'] = new_cookies.output(sep = '\n')
+    values['getField'] = getField
     folder = name.rsplit(".", 1)[1]
     try:
       preprocess(path.join(folder, name), values, None, root="./")
@@ -137,7 +138,7 @@ def setup():
     values['__ERRFILE__'] = name
     values['__ERRNO__'] = errno
     values['__ERRMESSAGE__'] = errmessages[errno]
-    preprocess(path.join('html', '%d.html' % str(errno)), values)
+    preprocess(path.join('html', '%d.html' % errno), values)
     exit(0)
   try:
     setField('query_string', '?%s' % environ['QUERY_STRING'])
