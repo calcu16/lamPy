@@ -1,6 +1,10 @@
 *.py[co]
+*.conf
+__pycache__
 build
 /setup.py
 /handler.py
 /.htaccess
 /node
+/db/*.sh
+
