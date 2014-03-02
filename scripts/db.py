@@ -44,7 +44,7 @@ def sqlite(**kwargs):
       return s
   
   class Connection(object):
-    def __init__(**kwargs):
+    def __init__(self,**kwargs):
       nonlocal dict_factory
       self.conn = connect(**kwargs)
       self.cur = conn.cursor()
@@ -69,6 +69,60 @@ def sqlite(**kwargs):
       values = dict(values)
       values['__SQL__'] = 'sqlite3'
       result = strbuilder()
-      values = pypreprocess('sql/%s.sql' % query, values, result)
+      values = preprocess('sql/%s.sql' % query, values, result)
       return result(), values
   return Connection(**kwargs)
+
+def mysql(**kwargs):
+  from .pymysql import connect
+  from .pymysql.cursors import DictCursor
+  from .pypp import preprocess
+  from ast import literal_eval
+
+  def strbuilder():
+    result = ""
+    def builder(s = None):
+      nonlocal result
+      if s is not None:
+        result = "%s%s\n" % (result, s)
+      return result
+    return builder
+  
+  class Connection(object):
+    def __init__(self,**kwargs):
+      self.conn = connect(cursorclass=DictCursor,**kwargs)
+      self.cur = self.conn.cursor()
+    def __del__(self):
+      self.cur.close()
+      self.conn.commit()
+      self.conn.close()
+    def execute(self, queryfile, qargs={}, ppargs={}):
+      nonlocal strbuilder, preprocess
+      if isinstance(ppargs, str):
+        try:
+          ppargs = literal_eval(ppargs)
+        except:
+          pass
+      if isinstance(qargs, str):
+        try:
+          qargs = literal_eval(qargs)
+        except:
+          pass
+      result = strbuilder()
+      preprocess('sql/%s.sql' % queryfile, ppargs, result)
+      querystr = result()
+      self.cur.execute(querystr, qargs)
+    def query(self, queryfile, qargs={}, ppargs={}):
+      self.execute(queryfile, qargs, ppargs)
+      return self.cur.fetchall()
+    def queryRow(self, queryfile, qargs={}, ppargs={}):
+      self.execute(queryfile, qargs, ppargs)
+      return self.cur.fetchone()
+    def queryScalar(self, queryfile, qargs={}, ppargs={}):
+      row = self.queryRow(queryfile, qargs, ppargs)
+      try:
+        return next(iter(row.values()))
+      except StopIteration:
+        return None
+  return Connection(**kwargs)
+ 

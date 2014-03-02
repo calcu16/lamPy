@@ -30,6 +30,7 @@ def setup():
   from http.cookies import CookieError, SimpleCookie
   from cgi import FieldStorage
   from datetime import datetime
+  from .db import mysql
   from decimal import Decimal
   from json import JSONEncoder
   from os import environ, path
@@ -144,11 +145,17 @@ def setup():
     setField('query_string', '?%s' % environ['QUERY_STRING'])
   except KeyError:
     setField('query_string', '')
+
+  conn = mysql(**preprocess('conf/db.conf'))
   
   global values
   values = {
     'query_string' : getField('query_string'),
-    'redirect' : ''
+    'redirect' : '',
+    'execute' : conn.execute,
+    'query' : conn.query,
+    'queryRow' : conn.queryRow,
+    'queryScalar' : conn.queryScalar,
   }
   values['site_path'] = path.dirname(environ['SCRIPT_NAME'])
   values['file_path'] = environ['REDIRECT_URL'][len(values['site_path']):]
