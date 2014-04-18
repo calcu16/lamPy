@@ -1,7 +1,7 @@
 
 NODE_V = node-v0.10.5-linux-x64
 
-SUBMODULES = scripts/pypp bootstrap
+SUBMODULES = bootstrap $(wildcard modules/*)
 HANDLERS = handler setup
 SUBSYSTEMS = # bootstrap
 
@@ -26,7 +26,7 @@ $(HANDLERS:%=%.py): scripts/$$@
 $(SUBMODULES:%=%/README.md):
 	git submodule init $(@D)
 	git submodule update $(@D)
-	cd $(@D) && git checkout README.md
+	cd $(@D) && git checkout master
 
 node: $(NODE_V)
 	mv $(NODE_V) node
