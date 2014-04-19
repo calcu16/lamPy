@@ -3,7 +3,7 @@ NODE_V = node-v0.10.5-linux-x64
 
 SUBMODULES = bootstrap $(wildcard modules/*)
 HANDLERS = handler setup
-SUBSYSTEMS = # bootstrap
+SUBSYSTEMS = bootstrap
 
 TARGETS = .htaccess $(HANDLERS:%=%.py) $(SUBMODULES:%=%/README.md) $(SUBSYSTEMS)
 
@@ -17,7 +17,7 @@ clean:
 .PHONY: $(SUBSYSTEMS)
 
 .htaccess: .htaccess.template
-	cp .htaccess.start .htaccess && chmod 755 .htaccess
+	cp .htaccess.start .htaccess && chmod 777 .htaccess
 
 $(HANDLERS:%=%.py): scripts/$$@
 	echo '#!'`which python3` | cat - $< > $@
@@ -43,8 +43,6 @@ bootstrap/.node_modules: node
 	cd $(@D) && ../node/bin/npm install
 
 # subsystems
-$(SUBSYSTEMS): 
+$(SUBSYSTEMS):
 	cd $@ && $(MAKE)
 
-
-	
