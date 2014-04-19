@@ -28,13 +28,13 @@
 def sqlite(**kwargs):
   from sqlite3 import connect
   from .pypp import preprocess
-  
+
   def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
       d[col[0]] = row[idx]
     return d
-  
+
   def strbuilder():
     result = ""
     def builder(s = None):
@@ -42,7 +42,7 @@ def sqlite(**kwargs):
       if s is not None:
         result = "%s%s\n" % (result, s)
       return s
-  
+
   class Connection(object):
     def __init__(self,**kwargs):
       nonlocal dict_factory
@@ -87,7 +87,7 @@ def mysql(**kwargs):
         result = "%s%s\n" % (result, s)
       return result
     return builder
-  
+
   class Connection(object):
     def __init__(self,**kwargs):
       self.conn = connect(cursorclass=DictCursor,**kwargs)
