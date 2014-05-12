@@ -6,5 +6,6 @@ build
 /handler.py
 /.htaccess
 /node
+/db/*.db
 /db/*.sh
 
