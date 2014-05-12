@@ -24,62 +24,13 @@
 # The views and conclusions contained in the software and documentation are those
 # of the authors and should not be interpreted as representing official policies, 
 # either expressed or implied, of the FreeBSD Project.
+from .pypp import preprocess
+from ast import literal_eval
 
-def sqlite(**kwargs):
-  from sqlite3 import connect
-  from .pypp import preprocess
-
-  def dict_factory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-      d[col[0]] = row[idx]
-    return d
-
-  def strbuilder():
-    result = ""
-    def builder(s = None):
-      nonlocal result
-      if s is not None:
-        result = "%s%s\n" % (result, s)
-      return s
-
-  class Connection(object):
-    def __init__(self,**kwargs):
-      nonlocal dict_factory
-      self.conn = connect(**kwargs)
-      self.cur = conn.cursor()
-      self.scalar_factory = dict_factory
-    def scalar(query, values):
-      row = self.row(query, values)
-      return row[self.cur.description[0]]
-    def row(query, values):
-      self.execute(query, values)
-      return self.cur.fetchone()
-    def query(query, values):
-      self.execute(query, values)
-      return self.cur.fetchall()
-    def execute(query, values):
-      query, values = self.build(query, values)
-      return self.cur.execute(query, values)
-    def script(query, values):
-      query, values = self.build(query, values)
-      return self.cur.executescript(query, values)
-    def build(query, values):
-      nonlocal strbuilder, preprocess
-      values = dict(values)
-      values['__SQL__'] = 'sqlite3'
-      result = strbuilder()
-      values = preprocess('sql/%s.sql' % query, values, result)
-      return result(), values
-  return Connection(**kwargs)
-
-def mysql(**kwargs):
-  from .pymysql import connect
-  from .pymysql.cursors import DictCursor
-  from .pypp import preprocess
-  from ast import literal_eval
-
-  def strbuilder():
+class AbstractConnection(object):
+  def __init__(self, **kwargs):
+    pass
+  def strbuilder(self):
     result = ""
     def builder(s = None):
       nonlocal result
@@ -87,8 +38,60 @@ def mysql(**kwargs):
         result = "%s%s\n" % (result, s)
       return result
     return builder
+  def cursor(self):
+    pass
+  def execute(self, queryfile, qargs={}, ppargs={}):
+    global literal_eval, preprocess
+    if isinstance(ppargs, str):
+      try:
+        ppargs = literal_eval(ppargs)
+      except:
+        pass
+    if isinstance(qargs, str):
+      try:
+        qargs = literal_eval(qargs)
+      except:
+        pass
+    result = self.strbuilder()
+    preprocess('sql/%s.sql' % queryfile, ppargs, result)
+    querystr = result()
+    self.cur.execute(querystr, qargs)
+  def query(self, queryfile, qargs={}, ppargs={}):
+    self.execute(queryfile, qargs, ppargs)
+    return self.cur.fetchall()
+  def queryRow(self, queryfile, qargs={}, ppargs={}):
+    self.execute(queryfile, qargs, ppargs)
+    return self.cur.fetchone()
+  def queryScalar(self, queryfile, qargs={}, ppargs={}):
+    row = self.queryRow(queryfile, qargs, ppargs)
+    try:
+      return next(iter(row.values()))
+    except StopIteration:
+      return None
 
-  class Connection(object):
+def sqlite(**kwargs):
+  from sqlite3 import connect
+
+  def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+      d[col[0]] = row[idx]
+    return d
+
+  class Connection(AbstractConnection):
+    def __init__(self,**kwargs):
+      nonlocal dict_factory
+      super().__init__(**kwargs)
+      self.conn = connect(**kwargs)
+      self.cur = self.conn.cursor()
+      self.cur.row_factory = dict_factory
+  return Connection(**kwargs)
+
+def mysql(**kwargs):
+  from .pymysql import connect
+  from .pymysql.cursors import DictCursor
+
+  class Connection(AbstractConnection):
     def __init__(self,**kwargs):
       self.conn = connect(cursorclass=DictCursor,**kwargs)
       self.cur = self.conn.cursor()
@@ -96,33 +99,5 @@ def mysql(**kwargs):
       self.cur.close()
       self.conn.commit()
       self.conn.close()
-    def execute(self, queryfile, qargs={}, ppargs={}):
-      nonlocal strbuilder, preprocess
-      if isinstance(ppargs, str):
-        try:
-          ppargs = literal_eval(ppargs)
-        except:
-          pass
-      if isinstance(qargs, str):
-        try:
-          qargs = literal_eval(qargs)
-        except:
-          pass
-      result = strbuilder()
-      preprocess('sql/%s.sql' % queryfile, ppargs, result)
-      querystr = result()
-      self.cur.execute(querystr, qargs)
-    def query(self, queryfile, qargs={}, ppargs={}):
-      self.execute(queryfile, qargs, ppargs)
-      return self.cur.fetchall()
-    def queryRow(self, queryfile, qargs={}, ppargs={}):
-      self.execute(queryfile, qargs, ppargs)
-      return self.cur.fetchone()
-    def queryScalar(self, queryfile, qargs={}, ppargs={}):
-      row = self.queryRow(queryfile, qargs, ppargs)
-      try:
-        return next(iter(row.values()))
-      except StopIteration:
-        return None
   return Connection(**kwargs)
- 
+
