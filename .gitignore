@@ -1,5 +1,5 @@
 *.py[co]
-*.conf
+*.conf.private
 __pycache__
 build
 /setup.py

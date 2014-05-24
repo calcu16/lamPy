@@ -101,9 +101,20 @@ def mysql(**kwargs):
       self.conn.close()
   return Connection(**kwargs)
 
+def noSource(**kwargs):
+  class Connection(object):
+    def __init__(self, **kwargs):
+      self.execute = None
+      self.query = None
+      self.queryRow = None
+      self.queryScalar = None
+  return Connection(**kwargs)
+      
 def sql(source, **kwargs):
   sources = {
     'mysql' : mysql
     'sqlite' : sqlite
+    'none' : noSource
   }
   return sources[source](**kwargs)
+
