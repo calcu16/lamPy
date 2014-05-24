@@ -30,7 +30,7 @@ def setup():
   from http.cookies import CookieError, SimpleCookie
   from cgi import FieldStorage
   from datetime import datetime
-  from .db import mysql
+  from .db import sql
   from decimal import Decimal
   from json import JSONEncoder
   from os import environ, path
@@ -146,7 +146,7 @@ def setup():
   except KeyError:
     setField('query_string', '')
 
-  conn = mysql(**preprocess('conf/db.conf'))
+  conn = sql(**preprocess('conf/db.conf'))
   
   global values
   values = {

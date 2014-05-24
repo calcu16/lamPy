@@ -101,3 +101,9 @@ def mysql(**kwargs):
       self.conn.close()
   return Connection(**kwargs)
 
+def sql(source, **kwargs):
+  sources = {
+    'mysql' : mysql
+    'sqlite' : sqlite
+  }
+  return sources[source](**kwargs)
