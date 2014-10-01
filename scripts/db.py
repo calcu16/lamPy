@@ -112,8 +112,8 @@ def noSource(**kwargs):
       
 def sql(source, **kwargs):
   sources = {
-    'mysql' : mysql
-    'sqlite' : sqlite
+    'mysql' : mysql,
+    'sqlite' : sqlite,
     'none' : noSource
   }
   return sources[source](**kwargs)
